@@ -1,5 +1,10 @@
 name: Backend CI (Maven + ECR)
 
+permissions:
+  contents: read
+  security-events: write   # <-- required to upload CodeQL SARIF
+  actions: read
+
 on:
   push:
     branches: [ master, main, 'feature/**', 'fix/**' ]
