@@ -1,17 +1,53 @@
-version: "3"
 services:
+  db:
+    image: mysql:8.0
+    container_name: book-portal-mysql
+    environment:
+      MYSQL_DATABASE: book_portal
+      MYSQL_USER: book
+      MYSQL_PASSWORD: book
+      MYSQL_ROOT_PASSWORD: root
+    command: [
+      "--default-authentication-plugin=mysql_native_password",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_0900_ai_ci"
+    ]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d
+    expose: ["3306"]
+
   book-portal-be:
-    image: ugurcanerdogan/book-portal-be:latest
-    container_name: "book-portal-be"
+    build: ./book-portal-be
+    container_name: book-portal-be
+    expose: ["8080"]   # internal only
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/book_portal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: book
+      SPRING_DATASOURCE_PASSWORD: book
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
 
   book-portal-fe:
-    image: ugurcanerdogan/book-portal-fe:latest
-    container_name: "book-portal-fe"
-    depends_on:
-      - book-portal-be
+    build: ./book-portal-fe
+    container_name: book-portal-fe
+    depends_on: [book-portal-be]
+    expose: ["3000"]   # internal only
+
   proxy:
-    image: ugurcanerdogan/book-portal-proxy:latest
-    container_name: "book-portal-proxy"
-    restart: always
+    build: ./nginx
+    container_name: book-portal-proxy
+    depends_on: [book-portal-fe, book-portal-be]
     ports:
-      - "80:80"
+      - "80:80"        # publish to host
+
+volumes:
+  dbdata:
