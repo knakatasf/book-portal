@@ -14,8 +14,8 @@ jobs:
       - name: SSH deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}        # e.g. 1.2.3.4
-          username: ${{ secrets.SSH_USER }}    # e.g. ubuntu
+          host: 98.88.25.18
+          username: ubuntu
           key: ${{ secrets.SSH_KEY }}          # paste PEM contents into this secret
           script: |
             set -e
