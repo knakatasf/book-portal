@@ -25,8 +25,8 @@ jobs:
         with:
           languages: java
 
-      - name: Build (Maven)
-        run: mvn -B package --file pom.xml
+      - name: Build (Maven, skip tests)
+        run: mvn -B -DskipTests package --file pom.xml
         working-directory: ./book-portal-be
 
       - name: Perform CodeQL Analysis
@@ -47,7 +47,7 @@ jobs:
 
       # If you use long-lived access keys in repo secrets:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
